@@ -157,10 +157,11 @@ class TestNoteUpdateDelete(TestCase):
         )
 
     def test_author_can_edit_note(self):
-        response = self.author_client.post(
+        self.author_client.post(
             self.note_edit_url,
             data=self.form_data
         )
+        self.note.refresh_from_db()
         self.assertEqual(
             self.note.text,
             self.NEW_NOTE_TEXT
