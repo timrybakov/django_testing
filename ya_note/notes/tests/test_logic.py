@@ -21,36 +21,55 @@ class TestNoteCreation(TestCase):
         cls.auth_client = Client()
         cls.auth_client.force_login(cls.user)
         cls.url = reverse('notes:add')
+        cls.redirect_url = reverse('notes:success')
         cls.note = Note.objects.create(
             text='Text',
             slug='slug',
             author=cls.user
         )
         cls.form_data_1 = {
+            'title': 'Title',
             'text': 'Text',
-            'slug': 'slug'
+            'slug': 'slugify'
         }
         cls.form_data_2 = {
             'title': f'{cls.MESSAGE}',
             'text': 'Text'
         }
+        cls.form_data_3 = {
+            'title': 'Title',
+            'text': 'Text',
+            'slug': 'slug'
+        }
 
-    def test_create_note_for_user_and_anonymous_user(self):
-        user_notes = (
-            (self.auth_client, self.BASE_NOTES_COUNT + 1),
-            (self.client, self.BASE_NOTES_COUNT)
+    def test_anonymous_user_cant_create_note(self):
+        self.client.post(
+            self.url,
+            data=self.form_data_1
         )
-        for user, expected_count in user_notes:
-            user.post(self.url, data=self.form_data_1)
-            total_count = Note.objects.count()
-            with self.subTest(user=user):
-                self.assertEqual(
-                    total_count,
-                    expected_count
-                )
+        total_count = Note.objects.count()
+        self.assertEqual(
+            total_count,
+            self.BASE_NOTES_COUNT
+        )
+
+    def test_user_can_create_note(self):
+        response = self.auth_client.post(
+            self.url,
+            data=self.form_data_1
+        )
+        self.assertRedirects(
+            response,
+            self.redirect_url
+        )
+        notes_count = Note.objects.count()
+        self.assertEqual(
+            notes_count,
+            self.BASE_NOTES_COUNT + 1
+        )
 
     def test_user_cant_send_same_slug(self):
-        response = self.auth_client.post(self.url, data=self.form_data_1)
+        response = self.auth_client.post(self.url, data=self.form_data_3)
         self.assertFormError(
             response,
             form='form',
@@ -107,7 +126,11 @@ class TestNoteUpdateDelete(TestCase):
         cls.delete_url = reverse('notes:delete', args=(cls.note.slug,))
         cls.redirect_url = reverse('notes:success')
 
-        cls.form_data = {'text': cls.NEW_NOTE_TEXT}
+        cls.form_data = {
+            'title': cls.note.title,
+            'text': cls.NEW_NOTE_TEXT,
+            'slug': cls.note.slug
+        }
 
     def test_author_can_delete_note(self):
         response = self.author_client.delete(self.delete_url)
@@ -134,7 +157,7 @@ class TestNoteUpdateDelete(TestCase):
         )
 
     def test_author_can_edit_note(self):
-        self.author_client.post(
+        response = self.author_client.post(
             self.note_edit_url,
             data=self.form_data
         )
