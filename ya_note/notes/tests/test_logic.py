@@ -9,6 +9,7 @@ from notes.forms import WARNING
 
 User = get_user_model()
 
+
 class TestNoteCreation(TestCase):
 
     MESSAGE: str = 'Щука'

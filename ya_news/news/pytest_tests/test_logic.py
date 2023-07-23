@@ -60,6 +60,7 @@ def test_author_can_delete_comment(
     comments_count = Comment.objects.count()
     assert comments_count == 0
 
+
 @pytest.mark.django_db
 def test_user_cant_delete_comment_of_another_user(
     comment, admin_client, news
@@ -69,6 +70,7 @@ def test_user_cant_delete_comment_of_another_user(
     assert response.status_code == HTTPStatus.NOT_FOUND
     comments_count = Comment.objects.count()
     assert comments_count == 1
+
 
 @pytest.mark.django_db
 def test_author_can_edit_comment(
@@ -81,14 +83,13 @@ def test_author_can_edit_comment(
     comment.refresh_from_db()
     assert comment.text == 'New text'
 
+
 @pytest.mark.django_db
 def test_user_cant_edit_comment_of_another_user(
     comment, admin_client, news, form_data_3
 ):
     url = reverse('news:edit', args=(comment.pk,))
-    url_to_comments = reverse('news:detail', args=(news.pk,)) + '#comments'
     response = admin_client.post(url, data=form_data_3)
     assert response.status_code == HTTPStatus.NOT_FOUND
     comment.refresh_from_db()
     assert comment.text == 'Text'
-

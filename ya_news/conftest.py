@@ -7,14 +7,17 @@ from django.utils import timezone
 from news.models import News, Comment
 from news.forms import BAD_WORDS
 
+
 @pytest.fixture
 def author(django_user_model):
     return django_user_model.objects.create(username='author')
+
 
 @pytest.fixture
 def author_client(author, client):
     client.force_login(author)
     return client
+
 
 @pytest.fixture
 def news():
@@ -22,6 +25,7 @@ def news():
         title='Title',
         text='Text'
     )
+
 
 @pytest.fixture
 def comment(author, news):
@@ -31,17 +35,19 @@ def comment(author, news):
         text='Text'
     )
 
+
 @pytest.fixture
 def newses():
     today = datetime.today()
     return News.objects.bulk_create(
-            News(
-                title=f'News {index}',
-                text='Text',
-                date=today - timedelta(days=index)
-            )
-            for index in range(settings.NEWS_COUNT_ON_HOME_PAGE + 1)
+        News(
+            title=f'News {index}',
+            text='Text',
+            date=today - timedelta(days=index)
         )
+        for index in range(settings.NEWS_COUNT_ON_HOME_PAGE + 1)
+    )
+
 
 @pytest.fixture
 def comments(news, author):
@@ -56,13 +62,16 @@ def comments(news, author):
         comment.save()
     return comment
 
+
 @pytest.fixture
 def form_data_1():
     return {'text': 'Comment text'}
 
+
 @pytest.fixture
 def form_data_2():
     return {'text': f'Comment text {BAD_WORDS[0]}'}
+
 
 @pytest.fixture
 def form_data_3():
