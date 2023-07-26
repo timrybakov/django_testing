@@ -1,8 +1,10 @@
 import pytest
 from datetime import datetime, timedelta
+import random
 
 from django.conf import settings
 from django.utils import timezone
+from django.urls import reverse
 
 from news.models import News, Comment
 from news.forms import BAD_WORDS
@@ -52,7 +54,7 @@ def newses():
 @pytest.fixture
 def comments(news, author):
     now = timezone.now()
-    for index in range(2):
+    for index in range(10):
         comment = Comment.objects.create(
             news=news,
             author=author,
@@ -70,9 +72,38 @@ def form_data_1():
 
 @pytest.fixture
 def form_data_2():
-    return {'text': f'Comment text {BAD_WORDS[0]}'}
+    return {'text': random.choice(BAD_WORDS)}
 
 
 @pytest.fixture
 def form_data_3():
     return {'text': 'New text'}
+
+
+@pytest.fixture
+def home_url():
+    return reverse('news:home')
+
+
+@pytest.fixture
+def detail_news_url(news):
+    return reverse(
+        'news:detail',
+        args=(news.pk,)
+    )
+
+
+@pytest.fixture
+def delete_comment_url(comment):
+    return reverse(
+        'news:delete',
+        args=(comment.pk,)
+    )
+
+
+@pytest.fixture
+def edit_comment_url(comment):
+    return reverse(
+        'news:edit',
+        args=(comment.pk,)
+    )

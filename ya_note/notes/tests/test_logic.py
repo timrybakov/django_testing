@@ -64,9 +64,22 @@ class TestNoteCreation(TestCase):
             self.redirect_url
         )
         notes_count = Note.objects.count()
+        new_note = Note.objects.last()
         self.assertEqual(
             notes_count,
             self.BASE_NOTES_COUNT + 1
+        )
+        self.assertEqual(
+            new_note.title,
+            self.form_data_1['title']
+        )
+        self.assertEqual(
+            new_note.text,
+            self.form_data_1['text']
+        )
+        self.assertEqual(
+            new_note.slug,
+            self.form_data_1['slug']
         )
 
     def test_user_cant_send_same_slug(self):
